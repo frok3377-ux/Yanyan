@@ -202,34 +202,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
     document.getElementById("cms-form-section")?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  if (!currentUser) {
-    return (
-      <div className="bg-white p-6 sm:p-10 rounded-2xl border border-[#e9edef] text-center max-w-lg mx-auto py-12 shadow-md" id="cms-login-wall">
-        <Database className="w-12 h-12 text-[#128c7e] mx-auto mb-4 animate-bounce" />
-        <h2 className="font-display font-semibold text-slate-800 text-lg mb-2">
-          故事線後台管理系統 (Admin CMS Panel)
-        </h2>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6 leading-relaxed font-light">
-          若要新增/編輯 WhatsApp 對話紀錄、上傳截圖與調整 Hugo、Heidi 與 Angie 之間的關係能量、或一鍵充填演示案例數據，請登入驗證。
-        </p>
-
-        <button
-          onClick={loginWithGoogle}
-          className="bg-[#128c7e] hover:bg-[#0b645a] active:scale-95 text-white text-xs font-semibold px-6 py-3 rounded-lg flex items-center gap-2 mx-auto transition-all cursor-pointer shadow-sm"
-        >
-          <LogIn className="w-4 h-4" />
-          使用 Google 帳號授權登入
-        </button>
-
-        <div className="mt-8 border-t border-slate-100 pt-4 flex gap-2.5 items-start text-left text-[11px] text-slate-400 max-w-xs mx-auto">
-          <AlertCircle className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
-          <span>
-            提示：為確保系統安全性，僅有管理員帳號 (<strong>frok3377@gmail.com</strong>) 才有對 Firestore 寫入與更改權限。
-          </span>
-        </div>
-      </div>
-    );
-  }
+  // No longer blocking non-logged-in users. Everyone is admin!
 
   return (
     <div className="space-y-6" id="cms-authenticated-view">
@@ -242,24 +215,34 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-800 text-sm">{currentUser.email}</span>
-              {isAdmin ? (
-                <span className="text-[10px] bg-emerald-100 border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">最高管理者 👑</span>
-              ) : (
-                <span className="text-[10px] bg-slate-150 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-mono">訪客 (唯讀)</span>
-              )}
+              <span className="font-semibold text-slate-800 text-sm">
+                {currentUser?.email || "免登入公開協作模式 (Public Admin)"}
+              </span>
+              <span className="text-[10px] bg-emerald-100 border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">無需驗證權限 👑</span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">系統已驗證。跨裝置流暢對接同步開展中。</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              系統已對所有訪客全面開放。你所做的變更將即時同步備份至雲端 Firestore。
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={logoutUser}
-          className="text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 font-medium px-3.5 py-1.8 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          登出
-        </button>
+        {currentUser ? (
+          <button
+            onClick={logoutUser}
+            className="text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 font-medium px-3.5 py-1.8 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            切換帳號/登出
+          </button>
+        ) : (
+          <button
+            onClick={loginWithGoogle}
+            className="text-xs text-[#128c7e] hover:text-[#0b645a] bg-[#128c7e]/15 hover:bg-[#128c7e]/25 font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            綁定 Google 帳號 (選填)
+          </button>
+        )}
       </div>
 
       {/* Floating Status Notification Toast */}
