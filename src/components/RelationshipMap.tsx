@@ -143,9 +143,6 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
                   referrerPolicy="no-referrer"
                   className="w-20 h-20 rounded-full object-cover ring-2 ring-[#128c7e]/20" 
                 />
-                <div className="absolute -bottom-1 -right-1 bg-[#128c7e] text-white rounded-full p-1 px-2.5 text-[8px] font-mono tracking-widest uppercase shadow-md">
-                  PROTAGONIST
-                </div>
               </div>
               
               <h3 className="font-display font-bold text-[#128c7e] mt-3">{hugo.name}</h3>
