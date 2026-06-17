@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "TimelineEvent": {
+      "title": "TimelineEvent",
+      "description": "An event on the interactive timeline, consisting of a chat, screenshot message, or narrative segment.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "time": { "type": "string" },
+        "characterId": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "type": { "type": "string", "enum": ["chat", "narrative", "screenshot", "marker"] },
+        "sentiment": { "type": "string", "enum": ["positive", "neutral", "negative"] },
+        "isImportant": { "type": "boolean" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "date", "time", "characterId", "content", "type"]
+    },
+    "Character": {
+      "title": "Character",
+      "description": "A character involved in the WhatsApp storyline.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "color": { "type": "string" },
+        "relationshipToIvan": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "color"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "An administrator document containing roles.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Store list of administrators to secure CMS access."
+    },
+    "characters/{characterId}": {
+      "schema": "Character",
+      "description": "Dynamic characters metadata."
+    },
+    "timeline_events/{eventId}": {
+      "schema": "TimelineEvent",
+      "description": "Unified timeline events collection storing chat dialogs, screenshots, and story narrative."
+    }
+  }
+}

@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Checking authentication and verifications
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Core Admin Check: Bootstrapping the user email frok3377@gmail.com
+    function isAdmin() {
+      return isEmailVerified() && (
+        request.auth.token.email == "frok3377@gmail.com" ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidTimelineEvent(data) {
+      return data.keys().hasAll(['id', 'date', 'time', 'characterId', 'content', 'type']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.date is string && data.date.size() == 10 &&
+             data.time is string && data.time.size() <= 8 &&
+             data.characterId is string && data.characterId.size() <= 64 &&
+             data.content is string && data.content.size() <= 5000 &&
+             data.type is string && (data.type == 'chat' || data.type == 'narrative' || data.type == 'screenshot' || data.type == 'marker') &&
+             (!data.keys().contains('sentiment') || (data.sentiment is string && (data.sentiment == 'positive' || data.sentiment == 'neutral' || data.sentiment == 'negative'))) &&
+             (!data.keys().contains('imageUrl') || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+             (!data.keys().contains('isImportant') || data.isImportant is bool) &&
+             (!data.keys().contains('order') || data.order is number);
+    }
+
+    function isValidCharacter(data) {
+      return data.keys().hasAll(['id', 'name', 'color']) &&
+             data.id is string && data.id.size() <= 64 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.color is string && data.color.size() <= 30 &&
+             (!data.keys().contains('avatarUrl') || (data.avatarUrl is string && data.avatarUrl.size() <= 1000)) &&
+             (!data.keys().contains('relationshipToIvan') || (data.relationshipToIvan is string && data.relationshipToIvan.size() <= 500));
+    }
+
+    function isValidAdminDocument(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.email is string && data.email.size() <= 200 &&
+             data.role is string && (data.role == 'admin');
+    }
+
+    // Rules for Admins Collection
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidId(adminId) && (request.resource == null || isValidAdminDocument(request.resource.data));
+    }
+
+    // Rules for Characters Collection
+    match /characters/{characterId} {
+      allow read: if true; 
+      allow write: if isAdmin() && isValidId(characterId) && (request.resource == null || isValidCharacter(request.resource.data));
+    }
+
+    // Rules for Timeline Events Collection
+    match /timeline_events/{eventId} {
+      allow read: if true; 
+      allow write: if isAdmin() && isValidId(eventId) && (request.resource == null || isValidTimelineEvent(request.resource.data));
+    }
+  }
+}
