@@ -68,6 +68,21 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
     }
   }, [characterId, receiverId]);
 
+  // Auto clean-up old characters (Ivan, Albee, Chloe) silently in the background on load
+  React.useEffect(() => {
+    const cleanOldCharacters = async () => {
+      try {
+        const oldIds = ["Ivan", "Albee", "Chloe"];
+        for (const id of oldIds) {
+          await deleteDoc(doc(db, "characters", id));
+        }
+      } catch (err) {
+        console.warn("Silent background cleanup of old characters failed (safe to ignore):", err);
+      }
+    };
+    cleanOldCharacters();
+  }, []);
+
   // Status message utility helper
   const triggerStatus = (text: string, isError = false) => {
     setStatusMessage({ text, error: isError });
@@ -158,26 +173,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
     }
   };
 
-  // Delete Old Characters (Ivan, Albee, Chloe)
-  const handleDeleteOldCharacters = async () => {
-    setLoading(true);
-    triggerStatus("正在著手自雲端資料庫中清理舊主角 (Ivan, Albee, Chloe) 記錄...", false);
-    try {
-      const oldIds = ["Ivan", "Albee", "Chloe"];
-      let deletedCount = 0;
-      for (const id of oldIds) {
-        // Only attempt to delete if they exist or to be safe delete them directly
-        await deleteDoc(doc(db, "characters", id));
-        deletedCount++;
-      }
-      triggerStatus(`🎉 已成功自 Firebase Firestore 移除 ${deletedCount} 位舊主角記錄！`);
-    } catch (error) {
-      console.error(error);
-      triggerStatus("清除失敗，可能需要更高的寫入權限，請重試。", true);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   // Clear Form State
   const clearForm = () => {
@@ -360,30 +356,16 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
             <Users className="w-4 h-4 text-[#128c7e]" />
             👥 主角頭像與情感設定後台管理 (Profile CMS)
           </h3>
-          <button
-            onClick={handleDeleteOldCharacters}
-            disabled={loading}
-            type="button"
-            className="text-[10px] bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-lg font-semibold font-sans cursor-pointer transition-all shrink-0 active:scale-95"
-            title="點擊從 Firestore 資料庫中一鍵刪除 Ivan / Albee / Chloe 舊角色記錄"
-          >
-            🗑️ 清除舊主角資料卡 (Ivan, Albee, Chloe)
-          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {["Hugo", "Heidi", "Angie"].map((charId) => {
-            const char = characters.find(c => c.id === charId);
+            const defaultChar = defaultCharacters.find(dc => dc.id === charId);
+            const char = characters.find(c => c.id === charId) || defaultChar;
             const isEditing = editingCharId === charId;
 
             if (!char) {
-              return (
-                <div key={charId} className="border border-dashed border-slate-200 bg-slate-50/55 p-5 rounded-xl text-center text-slate-400 text-xs flex flex-col justify-center items-center min-h-[160px]">
-                  <Database className="w-6 h-6 text-slate-300 mb-2" />
-                  <span>主角 [{charId}] 尚未在資料庫中初始化。</span>
-                  <span className="text-[10px] text-slate-400 mt-1">請先點擊上方「一鍵注入案例數據包」</span>
-                </div>
-              );
+              return null;
             }
 
             return (
