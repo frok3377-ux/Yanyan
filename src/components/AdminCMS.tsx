@@ -8,7 +8,7 @@ import { db, auth, loginWithGoogle, logoutUser } from '../firebase';
 import { doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { defaultCharacters, defaultTimelineEvents } from '../defaultData';
 import { Character, TimelineEvent, EventType, SentimentType } from '../types';
-import { LogIn, LogOut, ShieldCheck, Database, Plus, Trash2, Edit2, Image, AlertCircle, Calendar } from 'lucide-react';
+import { LogIn, LogOut, ShieldCheck, Database, Plus, Trash2, Edit2, Image, AlertCircle, Calendar, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface AdminCMSProps {
@@ -29,6 +29,12 @@ const PRESET_IMAGES = [
 export default function AdminCMS({ currentUser, characters, events, isAdmin }: AdminCMSProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ text: string; error?: boolean } | null>(null);
+
+  // Character Profile Editing State
+  const [editingCharId, setEditingCharId] = useState<string | null>(null);
+  const [charName, setCharName] = useState<string>("");
+  const [charAvatarUrl, setCharAvatarUrl] = useState<string>("");
+  const [charRelationship, setCharRelationship] = useState<string>("");
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -100,6 +106,74 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
     } catch (error) {
       console.error(error);
       triggerStatus("初始化寫入失敗，請確認 Firebase Rules 規則及項目配置。", true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initiate Edit Character profile
+  const initiateEditCharacter = (char: Character) => {
+    setEditingCharId(char.id);
+    setCharName(char.name);
+    setCharAvatarUrl(char.avatarUrl);
+    setCharRelationship(char.relationshipToHugo);
+  };
+
+  // Cancel Character Edit
+  const cancelCharacterEditing = () => {
+    setEditingCharId(null);
+    setCharName("");
+    setCharAvatarUrl("");
+    setCharRelationship("");
+  };
+
+  // Update Character in Firestore
+  const handleUpdateCharacter = async (charId: string) => {
+    if (!charName.trim() || !charAvatarUrl.trim() || !charRelationship.trim()) {
+      triggerStatus("請填寫完整的主角名字、頭像連結與情感關係描述！", true);
+      return;
+    }
+
+    setLoading(true);
+    triggerStatus(`正在儲存主角 [${charId}] 的資料卡...`, false);
+
+    try {
+      const existingChar = characters.find(c => c.id === charId);
+      const updatedChar: Character = {
+        id: charId,
+        name: charName.trim(),
+        avatarUrl: charAvatarUrl.trim(),
+        color: existingChar?.color || (charId === "Hugo" ? "#128c7e" : charId === "Heidi" ? "#ec4899" : "#eab308"),
+        relationshipToHugo: charRelationship.trim()
+      };
+
+      await setDoc(doc(db, "characters", charId), updatedChar);
+      triggerStatus(`🎉 成功更新主角 [${charId}] 的個人資料卡！`);
+      cancelCharacterEditing();
+    } catch (error) {
+      console.error(error);
+      triggerStatus(`個人資料卡更新失敗，請確認 Firestore 權限。`, true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete Old Characters (Ivan, Albee, Chloe)
+  const handleDeleteOldCharacters = async () => {
+    setLoading(true);
+    triggerStatus("正在著手自雲端資料庫中清理舊主角 (Ivan, Albee, Chloe) 記錄...", false);
+    try {
+      const oldIds = ["Ivan", "Albee", "Chloe"];
+      let deletedCount = 0;
+      for (const id of oldIds) {
+        // Only attempt to delete if they exist or to be safe delete them directly
+        await deleteDoc(doc(db, "characters", id));
+        deletedCount++;
+      }
+      triggerStatus(`🎉 已成功自 Firebase Firestore 移除 ${deletedCount} 位舊主角記錄！`);
+    } catch (error) {
+      console.error(error);
+      triggerStatus("清除失敗，可能需要更高的寫入權限，請重試。", true);
     } finally {
       setLoading(false);
     }
@@ -278,6 +352,151 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
           </button>
         </div>
       )}
+
+      {/* Protagonist Profiles Editor Box */}
+      <div className="bg-white border border-[#e9edef] p-5 rounded-xl space-y-4 shadow-sm" id="cms-character-section">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <h3 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
+            <Users className="w-4 h-4 text-[#128c7e]" />
+            👥 主角頭像與情感設定後台管理 (Profile CMS)
+          </h3>
+          <button
+            onClick={handleDeleteOldCharacters}
+            disabled={loading}
+            type="button"
+            className="text-[10px] bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-lg font-semibold font-sans cursor-pointer transition-all shrink-0 active:scale-95"
+            title="點擊從 Firestore 資料庫中一鍵刪除 Ivan / Albee / Chloe 舊角色記錄"
+          >
+            🗑️ 清除舊主角資料卡 (Ivan, Albee, Chloe)
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {["Hugo", "Heidi", "Angie"].map((charId) => {
+            const char = characters.find(c => c.id === charId);
+            const isEditing = editingCharId === charId;
+
+            if (!char) {
+              return (
+                <div key={charId} className="border border-dashed border-slate-200 bg-slate-50/55 p-5 rounded-xl text-center text-slate-400 text-xs flex flex-col justify-center items-center min-h-[160px]">
+                  <Database className="w-6 h-6 text-slate-300 mb-2" />
+                  <span>主角 [{charId}] 尚未在資料庫中初始化。</span>
+                  <span className="text-[10px] text-slate-400 mt-1">請先點擊上方「一鍵注入案例數據包」</span>
+                </div>
+              );
+            }
+
+            return (
+              <div 
+                key={charId} 
+                className={`border p-4 rounded-xl space-y-3 transition-shadow ${
+                  isEditing 
+                    ? 'border-[#128c7e] shadow-md bg-slate-50/20 ring-1 ring-[#128c7e]/10' 
+                    : 'border-slate-100 hover:shadow-sm bg-white'
+                }`}
+              >
+                {/* Profile Pic & Name */}
+                <div className="flex items-center gap-3">
+                  <div className="relative group shrink-0">
+                    <img 
+                      src={isEditing ? charAvatarUrl : char.avatarUrl} 
+                      alt={char.name} 
+                      className="w-12 h-12 rounded-full object-cover border-2 border-slate-100 shadow-sm" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120";
+                      }}
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Image className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  </div>
+                  <div className="truncate flex-1">
+                    <h4 className="font-semibold text-slate-800 text-xs flex items-center gap-1.5 truncate">
+                      {char.name} 
+                      <span className="text-[10px] text-slate-400 font-mono font-normal">({char.id})</span>
+                    </h4>
+                    <p className="text-[10px] text-slate-400 leading-normal line-clamp-1 truncate">
+                      {isEditing ? "正在編輯欄位中..." : char.relationshipToHugo}
+                    </p>
+                  </div>
+                </div>
+
+                {isEditing ? (
+                  // Editing Fields Form elements
+                  <div className="space-y-2.5 text-[11px] pt-1 border-t border-slate-100">
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-medium">角色顯示名稱 (與 Emoji)</label>
+                      <input 
+                        type="text"
+                        value={charName}
+                        onChange={(e) => setCharName(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#128c7e]"
+                        placeholder="e.g. Hugo🌴"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-medium">頭像圖片網址 (Profile Pic URL)</label>
+                      <input 
+                        type="url"
+                        value={charAvatarUrl}
+                        onChange={(e) => setCharAvatarUrl(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono focus:outline-none focus:border-[#128c7e]"
+                        placeholder="https://images.unsplash.com/..."
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-medium font-semibold">角色背景 / 情感描述</label>
+                      <textarea 
+                        value={charRelationship}
+                        onChange={(e) => setCharRelationship(e.target.value)}
+                        rows={2}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs focus:outline-none focus:border-[#128c7e] resize-none"
+                        placeholder="e.g. 男主角，在感情與理智的拉扯中前行..."
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-1.5">
+                      <button
+                        onClick={() => handleUpdateCharacter(charId)}
+                        disabled={loading}
+                        type="button"
+                        className="flex-1 bg-[#128c7e] hover:bg-[#0b645a] text-white py-1.5 rounded-lg font-semibold text-center hover:shadow-xs transition-all cursor-pointer text-xs"
+                      >
+                        儲存設定
+                      </button>
+                      <button
+                        onClick={cancelCharacterEditing}
+                        type="button"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-center transition-all cursor-pointer text-xs"
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // Static Information Card State
+                  <div className="space-y-2 text-[11px] text-slate-500 border-t border-slate-50 pt-2 bg-slate-50/50 p-2.5 rounded-lg">
+                    <p className="line-clamp-2 leading-relaxed">
+                      <span className="font-semibold text-slate-700">情感設定：</span>
+                      {char.relationshipToHugo}
+                    </p>
+                    <button
+                      onClick={() => initiateEditCharacter(char)}
+                      type="button"
+                      className="mt-1 text-[11px] font-bold text-[#128c7e] hover:text-[#0b645a] flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Edit2 className="w-3 h-3" /> 修改頭像或設定卡
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Add / Edit Form (Full-width upper card) */}
       <div className="bg-white border border-[#e9edef] p-5 rounded-xl space-y-4 shadow-sm" id="cms-form-section">
