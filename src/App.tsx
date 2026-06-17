@@ -83,9 +83,21 @@ export default function App() {
         if (!snapshot.empty) {
           const charList: Character[] = [];
           snapshot.forEach(doc => {
-            charList.push(doc.data() as Character);
+            const data = doc.data() as Character;
+            if (data && data.id !== "Ivan" && data.id !== "Albee" && data.id !== "Chloe") {
+              charList.push(data);
+            }
           });
-          setCharacters(charList);
+          
+          // Ensure we always have Hugo, Heidi, Angie in the list by filling missing with presets
+          const mergedList = [...charList];
+          defaultCharacters.forEach(dc => {
+            if (!mergedList.some(c => c.id === dc.id)) {
+              mergedList.push(dc);
+            }
+          });
+
+          setCharacters(mergedList);
           setSyncSource("database");
         } else {
           // If Firestore collection is empty, use the high-quality local dataset as fallback
