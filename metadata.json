@@ -1,5 +1,5 @@
 {
-  "name": "時空迴廊 • 三角關係對話錄",
+  "name": "仁語錄",
   "description": "An immersive, interactive timeline experience mapping the shifting relationship weights and emotional tension between a male protagonist and two female protagonists through their backup WhatsApp chats.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
