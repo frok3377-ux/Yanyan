@@ -65,14 +65,12 @@ service cloud.firestore {
 
     // Rules for Characters Collection
     match /characters/{characterId} {
-      allow read: if true; 
-      allow write: if isAdmin() && isValidId(characterId) && (request.resource == null || isValidCharacter(request.resource.data));
+      allow read, write: if true;
     }
 
     // Rules for Timeline Events Collection
     match /timeline_events/{eventId} {
-      allow read: if true; 
-      allow write: if isAdmin() && isValidId(eventId) && (request.resource == null || isValidTimelineEvent(request.resource.data));
+      allow read, write: if true;
     }
   }
 }
