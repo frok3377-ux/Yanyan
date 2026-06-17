@@ -169,7 +169,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-sans font-bold text-sm sm:text-base tracking-tight text-white flex items-center gap-2">
-                時空迴廊 • <span className="text-teal-100 font-light text-xs sm:text-sm">Relationship Chat Archive</span>
+                仁語錄 • <span className="text-teal-100 font-light text-xs sm:text-sm">Relationship Chat Archive</span>
               </h1>
               <p className="text-[9px] text-[#25d366] font-mono -mt-0.5 tracking-wider uppercase font-semibold">
                 Interactive Story Timeline Tracker
@@ -177,12 +177,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* Desktop Navigation Tabs (Excluding Admin CMS from standard visual menus) */}
+          {/* Desktop Navigation Tabs (Excluding Admin CMS from standard menus) */}
           <div className="hidden md:flex items-center bg-[#128c7e]/40 p-1 rounded-lg border border-[#128c7e]/20 text-[10px] uppercase tracking-widest gap-1 font-mono">
             {[
               { id: "timeline", label: "故事時間軸 (Timeline)", icon: Compass },
               { id: "stats", label: "情感數據分析 (Analytics)", icon: BarChart2 },
-              { id: "cms", label: "對話動態管理 (CMS)", icon: ShieldCheck }
+              ...(activeTab === "cms" ? [{ id: "cms", label: "對話動態管理 (CMS)", icon: ShieldCheck }] : [])
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -237,7 +237,7 @@ export default function App() {
           {[
             { id: "timeline", label: "時間軸", icon: Compass },
             { id: "stats", label: "情感分析", icon: BarChart2 },
-            { id: "cms", label: "對話管理", icon: ShieldCheck }
+            ...(activeTab === "cms" ? [{ id: "cms", label: "對話管理", icon: ShieldCheck }] : [])
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -266,7 +266,7 @@ export default function App() {
           /* LOADING PROGRESS SPINNER */
           <div className="flex flex-col items-center justify-center p-32 h-[450px]">
             <RefreshCw className="w-8 h-8 text-[#128c7e] animate-spin" />
-            <p className="text-sm font-sans text-slate-600 mt-4 animate-pulse">正在載入時空迴廊...</p>
+            <p className="text-sm font-sans text-slate-600 mt-4 animate-pulse">正在載入仁語錄...</p>
           </div>
 
         ) : (
@@ -361,15 +361,8 @@ export default function App() {
       </main>
 
       {/* FOOTER */}
-      <footer className="h-12 border-t border-[#e9edef] bg-white flex items-center justify-between px-6 mt-12 text-[10px] font-bold uppercase tracking-widest text-slate-500 font-mono shadow-inner" id="app-footer">
-        <div className="flex space-x-4">
-          <span>時空迴廊 © 2026</span>
-          <span className="hidden sm:inline">Theme: WhatsApp Classic Background</span>
-        </div>
-        <div className="flex space-x-4">
-          <span className="hidden md:inline">高強度多線程防護體系</span>
-          <span className="text-[#128c7e]">Trace Live: Active</span>
-        </div>
+      <footer className="h-12 border-t border-[#e9edef] bg-white flex items-center justify-center px-6 mt-12 text-[10px] font-bold uppercase tracking-widest text-slate-500 font-mono shadow-inner" id="app-footer">
+        <span>仁語錄 © 2026</span>
       </footer>
 
     </div>
