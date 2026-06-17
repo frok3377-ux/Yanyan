@@ -102,8 +102,14 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
               <h3 className="font-display font-semibold text-slate-800 mt-3 text-sm">{heidi.name}</h3>
               <span className="text-[9px] font-mono text-pink-600 bg-pink-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">穩定交往 4 年</span>
               
-              <p className="text-xs text-slate-600 mt-3 leading-relaxed max-w-xs line-clamp-3 italic font-light">
-                "{heidi.relationshipToHugo}"
+              {heidi.bio && (
+                <p className="text-[11px] text-slate-400 mt-2 font-normal max-w-xs mx-auto leading-normal">
+                  {heidi.bio}
+                </p>
+              )}
+              
+              <p className="text-xs text-slate-600 mt-2 p-2 bg-pink-50/20 rounded-lg border border-pink-100/30 leading-relaxed max-w-xs line-clamp-3 italic font-light">
+                情感關係："{heidi.relationshipToHugo}"
               </p>
             </div>
  
@@ -146,9 +152,15 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
               </div>
               
               <h3 className="font-display font-bold text-[#128c7e] mt-3">{hugo.name}</h3>
- 
-              <p className="text-xs text-slate-700 text-center mt-3 leading-relaxed italic bg-white p-3 rounded-lg border border-slate-100 font-light shadow-sm">
-                "{hugo.relationshipToHugo}"
+
+              {hugo.bio && (
+                <p className="text-[11px] text-slate-400 mt-2 font-normal max-w-xs mx-auto leading-normal">
+                  {hugo.bio}
+                </p>
+              )}
+
+              <p className="text-xs text-slate-700 text-center mt-2 leading-relaxed italic bg-white p-3 rounded-lg border border-slate-100 font-light shadow-sm">
+                現狀設定："{hugo.relationshipToHugo}"
               </p>
             </div>
             
@@ -191,8 +203,14 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
               <h3 className="font-display font-semibold text-slate-800 mt-3 text-sm">{angie.name}</h3>
               <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">靈魂共鳴 / 創作夥伴</span>
               
-              <p className="text-xs text-slate-600 mt-3 leading-relaxed max-w-xs line-clamp-3 italic font-light">
-                "{angie.relationshipToHugo}"
+              {angie.bio && (
+                <p className="text-[11px] text-slate-400 mt-2 font-normal max-w-xs mx-auto leading-normal">
+                  {angie.bio}
+                </p>
+              )}
+              
+              <p className="text-xs text-slate-600 mt-2 p-2 bg-emerald-50/20 rounded-lg border border-emerald-100/30 leading-relaxed max-w-xs line-clamp-3 italic font-light">
+                情感關係："{angie.relationshipToHugo}"
               </p>
             </div>
  
