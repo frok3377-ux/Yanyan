@@ -22,6 +22,7 @@ export interface Character {
   avatarUrl: string;
   color: string; // Tailwind color class or hex string
   relationshipToHugo: string; // Short bio / current relationship status description
+  bio?: string; // Character biography/description
   createdAt?: any;
 }
 
