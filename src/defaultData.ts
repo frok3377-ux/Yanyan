@@ -6,21 +6,24 @@ export const defaultCharacters: Character[] = [
     name: "Hugo🌴",
     avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120",
     color: "#128c7e", // Hugo's signature color
-    relationshipToHugo: "男主角，夾在穩定與悸動之間，在尋求自我與責任的平衡點。"
+    relationshipToHugo: "男主角，夾在穩定與悸動之間，在尋求自我與責任的平衡點。",
+    bio: "一個在藝術與現實責任中掙扎的三十歲男主角，正面臨情感方向的重大抉擇。"
   },
   {
     id: "Heidi",
     name: "Heidi豬🐽",
     avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120",
     color: "#ec4899", // Pink
-    relationshipToHugo: "與 Hugo 穩定交往 4 年的女朋友。性格務實、溫柔，渴望穩定的婚姻生活，但最近感覺到 Hugo 的心不在焉與冷淡。"
+    relationshipToHugo: "與 Hugo 穩定交往 4 年的女朋友。性格務實、溫柔，渴望穩定的婚姻生活，但最近感覺到 Hugo 的心不在焉與冷淡。",
+    bio: "處事成熟、追求溫馨生活的務實女性，與Hugo共享4年回憶，對感情變化十分敏感。"
   },
   {
     id: "Angie",
     name: "Angie小公主👸",
     avatarUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=120",
     color: "#eab308", // Yellow
-    relationshipToHugo: "Hugo 在藝術寫生班認識的女孩。富有藝術氣息、隨性熱烈、富有靈性與創作力，對 Hugo 展現出濃烈的愛意與崇拜。"
+    relationshipToHugo: "Hugo 在藝術寫生班認識的女孩。富有藝術氣息、隨性熱烈、富有靈性與創作力，對 Hugo 展現出濃烈的愛意與崇拜。",
+    bio: "熱烈奔放、富有創作熱情的年輕藝術女孩，為Hugo的生活注入了驚喜與全新靈感。"
   }
 ];
 
