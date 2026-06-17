@@ -35,6 +35,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
   const [charName, setCharName] = useState<string>("");
   const [charAvatarUrl, setCharAvatarUrl] = useState<string>("");
   const [charRelationship, setCharRelationship] = useState<string>("");
+  const [charBio, setCharBio] = useState<string>("");
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -132,6 +133,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
     setCharName(char.name);
     setCharAvatarUrl(char.avatarUrl);
     setCharRelationship(char.relationshipToHugo);
+    setCharBio(char.bio || "");
   };
 
   // Cancel Character Edit
@@ -140,12 +142,13 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
     setCharName("");
     setCharAvatarUrl("");
     setCharRelationship("");
+    setCharBio("");
   };
 
   // Update Character in Firestore
   const handleUpdateCharacter = async (charId: string) => {
-    if (!charName.trim() || !charAvatarUrl.trim() || !charRelationship.trim()) {
-      triggerStatus("請填寫完整的主角名字、頭像連結與情感關係描述！", true);
+    if (!charName.trim() || !charAvatarUrl.trim() || !charRelationship.trim() || !charBio.trim()) {
+      triggerStatus("請填寫完整的主角名字、頭像連結、情感設定與人物簡介！", true);
       return;
     }
 
@@ -159,7 +162,8 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
         name: charName.trim(),
         avatarUrl: charAvatarUrl.trim(),
         color: existingChar?.color || (charId === "Hugo" ? "#128c7e" : charId === "Heidi" ? "#ec4899" : "#eab308"),
-        relationshipToHugo: charRelationship.trim()
+        relationshipToHugo: charRelationship.trim(),
+        bio: charBio.trim()
       };
 
       await setDoc(doc(db, "characters", charId), updatedChar);
@@ -408,7 +412,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
                   // Editing Fields Form elements
                   <div className="space-y-2.5 text-[11px] pt-1 border-t border-slate-100">
                     <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">角色顯示名稱 (與 Emoji)</label>
+                      <label className="text-slate-500 font-medium font-semibold">角色顯示名稱 (與 Emoji)</label>
                       <input 
                         type="text"
                         value={charName}
@@ -419,13 +423,24 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-slate-500 font-medium">頭像圖片網址 (Profile Pic URL)</label>
+                      <label className="text-slate-500 font-medium font-semibold">頭像圖片網址 (Profile Pic URL)</label>
                       <input 
                         type="url"
                         value={charAvatarUrl}
                         onChange={(e) => setCharAvatarUrl(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono focus:outline-none focus:border-[#128c7e]"
                         placeholder="https://images.unsplash.com/..."
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-medium font-semibold">人物簡介 (Character Bio)</label>
+                      <textarea 
+                        value={charBio}
+                        onChange={(e) => setCharBio(e.target.value)}
+                        rows={2}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs focus:outline-none focus:border-[#128c7e] resize-none"
+                        placeholder="e.g. 處事成熟、追求溫馨生活的務實女性..."
                         required
                       />
                     </div>
@@ -460,9 +475,13 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
                   </div>
                 ) : (
                   // Static Information Card State
-                  <div className="space-y-2 text-[11px] text-slate-500 border-t border-slate-50 pt-2 bg-slate-50/50 p-2.5 rounded-lg">
+                  <div className="space-y-2 text-[11px] text-slate-500 border-t border-slate-50 pt-2 bg-slate-50/50 p-2.5 rounded-lg text-left">
                     <p className="line-clamp-2 leading-relaxed">
-                      <span className="font-semibold text-slate-700">情感設定：</span>
+                      <span className="font-semibold text-slate-705 text-slate-700">✍️ 人物簡介：</span>
+                      {char.bio || "暫無簡介描述"}
+                    </p>
+                    <p className="line-clamp-2 leading-relaxed">
+                      <span className="font-semibold text-slate-705 text-slate-700">💞 情感設定：</span>
                       {char.relationshipToHugo}
                     </p>
                     <button
@@ -470,7 +489,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
                       type="button"
                       className="mt-1 text-[11px] font-bold text-[#128c7e] hover:text-[#0b645a] flex items-center gap-1 cursor-pointer transition-colors"
                     >
-                      <Edit2 className="w-3 h-3" /> 修改頭像或設定卡
+                      <Edit2 className="w-3 h-3" /> 修改頭像、簡介或設定卡
                     </button>
                   </div>
                 )}
