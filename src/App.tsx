@@ -27,7 +27,7 @@ export default function App() {
   const [syncSource, setSyncSource] = useState<"database" | "local_fallback" | null>(null);
 
   // Determine if the currently logged in user is the specific admin frok3377@gmail.com
-  const isAdmin = currentUser?.email === "frok3377@gmail.com" || (currentUser?.emailVerified === true && currentUser?.email?.toLowerCase().trim() === "frok3377@gmail.com");
+  const isAdmin = true;
 
   // Route monitoring helper for hidden CMS access via /admin
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function App() {
             {[
               { id: "timeline", label: "故事時間軸 (Timeline)", icon: Compass },
               { id: "stats", label: "情感數據分析 (Analytics)", icon: BarChart2 },
-              ...(activeTab === "cms" ? [{ id: "cms", label: "CMS 故事後台 管理中", icon: ShieldCheck }] : [])
+              { id: "cms", label: "對話動態管理 (CMS)", icon: ShieldCheck }
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -219,13 +219,13 @@ export default function App() {
         </div>
       </header>
 
-      {/* SUBNAV FOR MOBILE PORTABLES (CMS hidden from standard tabs list) */}
+      {/* SUBNAV FOR MOBILE PORTABLES */}
       <div className="md:hidden border-b border-[#e9edef] bg-white text-slate-600 sticky top-[53px] z-30 shadow-sm" id="mobile-nav">
         <div className="flex justify-around items-center py-2 px-1">
           {[
             { id: "timeline", label: "時間軸", icon: Compass },
             { id: "stats", label: "情感分析", icon: BarChart2 },
-            ...(activeTab === "cms" ? [{ id: "cms", label: "CMS 後台", icon: ShieldCheck }] : [])
+            { id: "cms", label: "對話管理", icon: ShieldCheck }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
