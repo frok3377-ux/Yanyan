@@ -100,7 +100,6 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
               </div>
               
               <h3 className="font-display font-bold text-pink-600 mt-3 text-sm">{heidi.name}</h3>
-              <span className="text-[9px] font-mono text-pink-600 bg-pink-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">穩定交往 4 年</span>
               
               {heidi.bio && (
                 <p className="text-[11px] text-slate-400 mt-2 font-normal max-w-xs mx-auto leading-normal">
@@ -164,7 +163,6 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
                 </div>
                 
                 <h3 className="font-display font-bold text-[#128c7e] mt-3 text-sm">{hugo.name}</h3>
-                <span className="text-[9px] font-mono text-[#128c7e] bg-teal-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">故事主角 / 抉擇人</span>
                 
                 {hugo.bio && (
                   <p className="text-[11px] text-slate-400 mt-2 font-normal max-w-xs mx-auto leading-normal">
@@ -225,7 +223,6 @@ export default function RelationshipMap({ characters, events }: RelationshipMapP
               </div>
               
               <h3 className="font-display font-bold text-emerald-600 mt-3 text-sm">{angie.name}</h3>
-              <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider mt-1.5 inline-block">靈魂共鳴 / 創作夥伴</span>
               
               {angie.bio && (
                 <p className="text-[11px] text-slate-400 mt-2 font-normal max-w-xs mx-auto leading-normal">
