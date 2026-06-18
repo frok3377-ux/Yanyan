@@ -187,7 +187,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
               
               // Format date readable
               const dateSplit = milestone.date.split("-");
-              const formattedDate = dateSplit.length >= 3 ? `${dateSplit[1]}月${dateSplit[2]}日` : milestone.date;
+              const formattedDate = dateSplit.length >= 3 ? `${dateSplit[0]}年${dateSplit[1]}月${dateSplit[2]}日` : milestone.date;
 
               // Safe resolve of indicator dot color and character label
               let resolvedColor = "rgb(148, 163, 184)"; // default slate gray color
