@@ -623,6 +623,7 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
                 <option value={SentimentType.NEUTRAL}>一般常態 💬 (Neutral)</option>
                 <option value={SentimentType.POSITIVE}>溫馨/熱絡 ❤️ (Positive)</option>
                 <option value={SentimentType.NEGATIVE}>緊繃/張力 ⚠️ (Negative)</option>
+                <option value={SentimentType.SUGGESTIVE}>性暗示 🫦 (Suggestive)</option>
               </select>
             </div>
           </div>
