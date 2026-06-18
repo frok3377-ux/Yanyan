@@ -130,29 +130,33 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
   const frequencyData = getFrequencyData();
   const hourlyData = getHourlyData();
 
-  // 4. Extract and calculate the frequency of Emojis used across dialogues
-  const getEmojiFrequencyData = () => {
+  // 4. Extract and calculate the frequency of Emojis used across dialogues by character
+  const getEmojiFrequencyByCharacter = (charId: string, alternateId: string) => {
     const counts: { [emoji: string]: number } = {};
     // Match common emojis including faces, hearts, animals, and symbols
     const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{27BF}]/gu;
     
-    events.forEach(e => {
-      if (!e.content) return;
-      const matches = e.content.match(emojiRegex);
-      if (matches) {
-        matches.forEach(emoji => {
-          counts[emoji] = (counts[emoji] || 0) + 1;
-        });
-      }
-    });
+    events
+      .filter(e => e.characterId === charId || e.characterId === alternateId)
+      .forEach(e => {
+        if (!e.content) return;
+        const matches = e.content.match(emojiRegex);
+        if (matches) {
+          matches.forEach(emoji => {
+            counts[emoji] = (counts[emoji] || 0) + 1;
+          });
+        }
+      });
 
     return Object.entries(counts)
       .map(([emoji, count]) => ({ emoji, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
+      .slice(0, 6);
   };
 
-  const emojiData = getEmojiFrequencyData();
+  const hugoEmojiData = getEmojiFrequencyByCharacter("Hugo", "Ivan");
+  const heidiEmojiData = getEmojiFrequencyByCharacter("Heidi", "Albee");
+  const angieEmojiData = getEmojiFrequencyByCharacter("Angie", "Chloe");
 
   return (
     <div className="space-y-6" id="stats-dashboard">
@@ -367,7 +371,7 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
             </div>
             <div className="space-y-1.5 text-xs">
               {angieSentiments.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
+                <div key={i} className="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100 font-sans">
                   <span className="flex items-center gap-2 text-slate-600 font-medium">
                     <span className="w-2 rounded-full h-2" style={{ backgroundColor: item.color }} />
                     {item.name}
@@ -376,86 +380,193 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
                 </div>
               ))}
               {angieSentiments.length === 0 && (
-                <span className="text-slate-400 text-[11px] font-mono">未檢測到對話記錄</span>
+                <span className="text-slate-400 text-[11px] font-mono block text-center py-2">未檢測到對話記錄</span>
               )}
             </div>
           </div>
         </div>
- 
+
       </div>
 
-      {/* Emoji Frequency Card */}
+      {/* Character-Specific Emoji Frequency Bistro */}
       <div className="bg-white p-5 rounded-xl border border-[#e9edef] shadow-sm">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-[#128c7e] font-bold block mb-1 font-sans">EMOJI DISCOVERY • 表情密碼</span>
-        <h4 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
-          📊 最常使用表情符號排行 (Most Frequent Emojis)
-        </h4>
-        <p className="text-xs text-slate-500 mb-6">
-          從所有 WhatsApp 對話與內心記錄中，即時分析獲取出現次數最高、最能描寫關係張力的熱門標誌。
-        </p>
+        <div className="mb-6">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-[#128c7e] font-bold block mb-1 font-sans">EMOJI RADAR • 角色專屬表情解密</span>
+          <h4 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
+            📊 角色表情符號頻率分析 (Character-Specific Emoji Usage)
+          </h4>
+          <p className="text-xs text-slate-500">
+            分析各個角色在對話與心靈獨白中私下最常傳遞的符號，揭示深層潛意識、愛意和壓抑焦慮。
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          {/* Chart Wrapper */}
-          <div className="h-64 sm:h-72">
-            {emojiData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={emojiData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" horizontal={false} />
-                  <XAxis type="number" stroke="#94a3b8" />
-                  <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={18} width={30} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e9edef", borderRadius: "8px" }}
-                    formatter={(value: any) => [`${value} 次`, '使用頻率']}
-                  />
-                  <Bar dataKey="count" fill="#128c7e" radius={[0, 4, 4, 0]} name="使用次數">
-                    {emojiData.map((entry, index) => {
-                      const colors = ["#128c7e", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899"];
-                      return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-slate-400 italic font-mono text-center">暫無表情符號對話數據</div>
-            )}
-          </div>
-
-          {/* List Details & Custom Interp */}
-          <div className="space-y-4">
-            <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-sans">表情密碼與情感雷達</h5>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {emojiData.map((item, index) => (
-                <div key={index} className="flex items-center gap-2.5 p-2 px-3 rounded-lg bg-slate-50 border border-slate-100 shadow-sm hover:border-slate-200 transition-all font-sans">
-                  <span className="text-xl shrink-0">{item.emoji}</span>
-                  <div className="overflow-hidden">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xs font-bold text-slate-700">共 {item.count} 次</span>
-                      <span className="text-[9px] text-[#128c7e] font-mono">#{index + 1}</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 truncate">
-                      {item.emoji === "🌴" && "男主角 Hugo 🌴 行為狀態"}
-                      {item.emoji === "🐽" && "女友 Heidi 豬🐽 日常愛意與心靈矛盾"}
-                      {item.emoji === "👸" && "新同事 Angie 👸 創作共鳴與火花"}
-                      {item.emoji === "❤️" && "主動表達親密或情感升溫"}
-                      {item.emoji === "⚡" && "關係中的火星、爭吵與情緒危機"}
-                      {item.emoji === "😊" && "日常寒暄、防備與應對情緒"}
-                      {item.emoji === "🥺" && "撒嬌示弱、委屈與內心妥協"}
-                      {item.emoji === "😘" && "深愛發言與約會信號"}
-                      {item.emoji === "😭" && "情緒崩潰、自責與情感不捨"}
-                      {!["🌴", "🐽", "👸", "❤️", "⚡", "😊", "🥺", "😘", "😭"].includes(item.emoji) && "反映當下情境"}
-                    </p>
-                  </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          
+          {/* 1. Hugo Card */}
+          <div className="bg-[#128c7e]/5 border border-[#128c7e]/15 p-4 rounded-xl flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-[#128c7e]/10">
+                <span className="text-2xl">🌴</span>
+                <div>
+                  <h5 className="font-bold text-sm text-[#128c7e]">Hugo (主角)</h5>
+                  <span className="text-[9px] text-slate-400 block font-mono">椰子島・狀態游移與掙扎</span>
                 </div>
-              ))}
-              {emojiData.length === 0 && (
-                <div className="col-span-2 text-slate-400 italic text-xs font-mono">暫無表情符號數據</div>
-              )}
+              </div>
+
+              <div className="h-44 mb-4 select-none">
+                {hugoEmojiData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={hugoEmojiData}
+                      layout="vertical"
+                      margin={{ top: 0, right: 15, left: -25, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+                      <XAxis type="number" stroke="#94a3b8" fontSize={9} />
+                      <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={14} width={30} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: 11 }}
+                        formatter={(value: any) => [`${value} 次`, 'Hugo 使用']}
+                      />
+                      <Bar dataKey="count" fill="#128c7e" radius={[0, 4, 4, 0]}>
+                        {hugoEmojiData.map((_, i) => (
+                          <Cell key={`hugo-${i}`} fill={["#128c7e", "#0b645a", "#159e8e", "#20b3a1", "#41c6b5", "#64dacf"][i % 6]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400 italic text-xs font-mono text-center">暫無對話表情</div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-2 border-t border-[#128c7e]/10">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">最常使用</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {hugoEmojiData.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 p-1.5 rounded bg-white/70 border border-slate-100 text-[11px] font-sans">
+                    <span className="text-sm shrink-0">{item.emoji}</span>
+                    <span className="font-bold text-[#128c7e] font-mono">{item.count}次</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2 font-sans italic leading-normal">
+                主用 🌴 象徵放空退縮；👍 / 😊 顯示壓抑和冷淡敷衍。
+              </p>
             </div>
           </div>
+
+          {/* 2. Heidi Card */}
+          <div className="bg-pink-50/50 border border-pink-100 p-4 rounded-xl flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-pink-200/40">
+                <span className="text-2xl">🐽</span>
+                <div>
+                  <h5 className="font-bold text-sm text-pink-600 font-sans">Heidi (女友)</h5>
+                  <span className="text-[9px] text-slate-400 block font-mono">交往4年・日常羈絆與安全感</span>
+                </div>
+              </div>
+
+              <div className="h-44 mb-4 select-none">
+                {heidiEmojiData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={heidiEmojiData}
+                      layout="vertical"
+                      margin={{ top: 0, right: 15, left: -25, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" horizontal={false} />
+                      <XAxis type="number" stroke="#94a3b8" fontSize={9} />
+                      <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={14} width={30} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #fbcfe8", borderRadius: "6px", fontSize: 11 }}
+                        formatter={(value: any) => [`${value} 次`, 'Heidi 使用']}
+                      />
+                      <Bar dataKey="count" fill="#ec4899" radius={[0, 4, 4, 0]}>
+                        {heidiEmojiData.map((_, i) => (
+                          <Cell key={`heidi-${i}`} fill={["#db2777", "#ec4899", "#f43f5e", "#f472b6", "#fbcfe8", "#fda4af"][i % 6]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400 italic text-xs font-mono text-center">暫無對話表情</div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-2 border-t border-pink-200/40">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">最常使用</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {heidiEmojiData.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 p-1.5 rounded bg-white/70 border border-pink-100 text-[11px] font-sans">
+                    <span className="text-sm shrink-0">{item.emoji}</span>
+                    <span className="font-bold text-pink-600 font-mono">{item.count}次</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2 font-sans italic leading-normal">
+                熱用 🐽、😘 展現日常撒嬌；出現 ⚡、😭 則代表嚴重不安全感。
+              </p>
+            </div>
+          </div>
+
+          {/* 3. Angie Card */}
+          <div className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-emerald-200/40">
+                <span className="text-2xl">👸</span>
+                <div>
+                  <h5 className="font-bold text-sm text-emerald-600 font-sans">Angie (同事)</h5>
+                  <span className="text-[9px] text-slate-400 block font-mono">新世界・樂理音樂靈魂共振</span>
+                </div>
+              </div>
+
+              <div className="h-44 mb-4 select-none">
+                {angieEmojiData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={angieEmojiData}
+                      layout="vertical"
+                      margin={{ top: 0, right: 15, left: -25, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#d1fae5" horizontal={false} />
+                      <XAxis type="number" stroke="#94a3b8" fontSize={9} />
+                      <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={14} width={30} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #a7f3d0", borderRadius: "6px", fontSize: 11 }}
+                        formatter={(value: any) => [`${value} 次`, 'Angie 使用']}
+                      />
+                      <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]}>
+                        {angieEmojiData.map((_, i) => (
+                          <Cell key={`angie-${i}`} fill={["#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#c6f6d5"][i % 6]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400 italic text-xs font-mono text-center">暫無對話表情</div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5 pt-2 border-t border-emerald-200/40">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">最常使用</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {angieEmojiData.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 p-1.5 rounded bg-white/70 border border-emerald-100 text-[11px] font-sans">
+                    <span className="text-sm shrink-0">{item.emoji}</span>
+                    <span className="font-bold text-emerald-600 font-mono">{item.count}次</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2 font-sans italic leading-normal">
+                高頻 🎸、👸 呼應樂理與靈感；💖 的出現預示情感防禦正在融化。
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
 
