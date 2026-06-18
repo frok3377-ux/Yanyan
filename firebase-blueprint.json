@@ -12,7 +12,7 @@
         "content": { "type": "string" },
         "imageUrl": { "type": "string" },
         "type": { "type": "string", "enum": ["chat", "narrative", "screenshot", "marker"] },
-        "sentiment": { "type": "string", "enum": ["positive", "neutral", "negative"] },
+        "sentiment": { "type": "string", "enum": ["positive", "neutral", "negative", "suggestive"] },
         "isImportant": { "type": "boolean" },
         "order": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
