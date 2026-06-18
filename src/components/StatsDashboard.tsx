@@ -109,6 +109,7 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
 
   const heidiSentiments = getSentimentStats("Heidi", "Albee");
   const angieSentiments = getSentimentStats("Angie", "Chloe");
+  const hugoSentiments = getSentimentStats("Hugo", "Ivan");
 
   const frequencyData = getFrequencyData();
   const hourlyData = getHourlyData();
@@ -126,7 +127,7 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
         </div>
       </div>
  
-      {/* Grid of charts */}
+      {/* Grid of main analytical charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  
         {/* 1. Interaction Frequency Trend over Time */}
@@ -183,8 +184,64 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
             </ResponsiveContainer>
           </div>
         </div>
+
+      </div>
+
+      {/* Grid of Sentiment Breakdown Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {/* 3. Sentiment breakdown Hugo */}
+        <div className="bg-white p-5 rounded-xl border border-[#e9edef] shadow-sm flex flex-col justify-between">
+          <div>
+            <h4 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#128c7e]" />
+              Hugo 🌴 的語調屬性分佈
+            </h4>
+            <p className="text-[11px] text-slate-400 mb-4">反映男主角在親密關係中所表達的關切、防備與內心掙扎</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 items-center">
+            <div className="h-40 font-mono text-xs">
+              {hugoSentiments.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={hugoSentiments}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={65}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {hugoSentiments.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e9edef", borderRadius: "8px" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-400 italic text-center">暫無數據</div>
+              )}
+            </div>
+            <div className="space-y-1.5 text-xs">
+              {hugoSentiments.map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
+                  <span className="flex items-center gap-2 text-slate-600 font-medium">
+                    <span className="w-2 rounded-full h-2" style={{ backgroundColor: item.color }} />
+                    {item.name}
+                  </span>
+                  <span className="font-mono text-slate-800 font-bold">{item.value} 條</span>
+                </div>
+              ))}
+              {hugoSentiments.length === 0 && (
+                <span className="text-slate-400 text-[11px] font-mono">未檢測到對話記錄</span>
+              )}
+            </div>
+          </div>
+        </div>
  
-        {/* 3. Sentiment breakdown Heidi */}
+        {/* 4. Sentiment breakdown Heidi */}
         <div className="bg-white p-5 rounded-xl border border-[#e9edef] shadow-sm flex flex-col justify-between">
           <div>
             <h4 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
@@ -193,7 +250,7 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
             </h4>
             <p className="text-[11px] text-slate-400 mb-4">反映穩定長期對話中的生活日常與矛盾反動</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-1 gap-4 items-center">
             <div className="h-40 font-mono text-xs">
               {heidiSentiments.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -218,9 +275,9 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
                 <div className="flex items-center justify-center h-full text-slate-400 italic text-center">暫無數據</div>
               )}
             </div>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-1.5 text-xs">
               {heidiSentiments.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded bg-slate-50 border border-slate-100">
+                <div key={i} className="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
                   <span className="flex items-center gap-2 text-slate-600 font-medium">
                     <span className="w-2 rounded-full h-2" style={{ backgroundColor: item.color }} />
                     {item.name}
@@ -235,7 +292,7 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
           </div>
         </div>
  
-        {/* 4. Sentiment breakdown Angie */}
+        {/* 5. Sentiment breakdown Angie */}
         <div className="bg-white p-5 rounded-xl border border-[#e9edef] shadow-sm flex flex-col justify-between">
           <div>
             <h4 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
@@ -244,7 +301,7 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
             </h4>
             <p className="text-[11px] text-slate-400 mb-4">反映深夜對話及工作合作中的靈感爆發與情感攀升</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-1 gap-4 items-center">
             <div className="h-40 font-mono text-xs">
               {angieSentiments.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -269,9 +326,9 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
                 <div className="flex items-center justify-center h-full text-slate-400 italic text-center">暫無數據</div>
               )}
             </div>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-1.5 text-xs">
               {angieSentiments.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-2.5 rounded bg-slate-50 border border-slate-100">
+                <div key={i} className="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
                   <span className="flex items-center gap-2 text-slate-600 font-medium">
                     <span className="w-2 rounded-full h-2" style={{ backgroundColor: item.color }} />
                     {item.name}
