@@ -36,7 +36,7 @@ service cloud.firestore {
              data.characterId is string && data.characterId.size() <= 64 &&
              data.content is string && data.content.size() <= 5000 &&
              data.type is string && (data.type == 'chat' || data.type == 'narrative' || data.type == 'screenshot' || data.type == 'marker') &&
-             (!data.keys().contains('sentiment') || (data.sentiment is string && (data.sentiment == 'positive' || data.sentiment == 'neutral' || data.sentiment == 'negative'))) &&
+             (!data.keys().contains('sentiment') || (data.sentiment is string && (data.sentiment == 'positive' || data.sentiment == 'neutral' || data.sentiment == 'negative' || data.sentiment == 'suggestive'))) &&
              (!data.keys().contains('imageUrl') || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
              (!data.keys().contains('isImportant') || data.isImportant is bool) &&
              (!data.keys().contains('order') || data.order is number);
