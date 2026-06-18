@@ -77,17 +77,10 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
       });
   }, [events, filterType, searchQuery, characterMap]);
 
-  // Extract critical anchoring milestones (important dates)
+  // Extract critical anchoring milestones (important dates & system markers)
   const anchorMilestones = React.useMemo(() => {
     return events
-      .filter(e => e.isImportant)
-      .reduce((acc, cur) => {
-        // Keep unique dates
-        if (!acc.find(item => item.date === cur.date)) {
-          acc.push(cur);
-        }
-        return acc;
-      }, [] as TimelineEvent[])
+      .filter(e => e.isImportant || e.type === EventType.MARKER)
       .sort((a, b) => {
         const dateCompare = a.date.localeCompare(b.date);
         if (dateCompare !== 0) return dateCompare;
@@ -100,15 +93,28 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
   // Scroll smoothly to a specific event ID and mark as active
   const handleAnchorClick = (eventId: string, date: string) => {
     setActiveAnchor(eventId);
-    const element = document.getElementById(`event-card-${eventId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Add a brief subtle flash animation to highlighted block
-      element.classList.add("ring-2", "ring-[#128c7e]", "duration-1000");
-      setTimeout(() => {
-        element.classList.remove("ring-2", "ring-[#128c7e]");
-      }, 2000);
+    
+    // Check if the event is in the currently filtered list
+    const isEventVisible = filteredEvents.some(e => e.id === eventId);
+    
+    if (!isEventVisible) {
+      // Safety reset filters so that the target event becomes visible
+      setFilterType("all");
+      setSearchQuery("");
     }
+
+    // Use setTimeout to allow the re-render to complete if filters were reset
+    setTimeout(() => {
+      const element = document.getElementById(`event-card-${eventId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Add a brief subtle flash animation to highlighted block
+        element.classList.add("ring-2", "ring-[#128c7e]", "duration-1000");
+        setTimeout(() => {
+          element.classList.remove("ring-2", "ring-[#128c7e]");
+        }, 2000);
+      }
+    }, isEventVisible ? 50 : 250);
   };
 
   return (
