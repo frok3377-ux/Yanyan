@@ -23,17 +23,34 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
     // For each date, sum count of interactions
     return dates.map(date => {
       const dayEvents = events.filter(e => e.date === date);
-      const heidiCount = dayEvents.filter(e => 
-        e.characterId === "Heidi" || 
-        e.characterId === "Albee" || 
-        ((e.characterId === "Hugo" || e.characterId === "Ivan") && (e.content.includes("Heidi") || e.content.includes("Albee")))
-      ).length;
-      const angieCount = dayEvents.filter(e => 
-        e.characterId === "Angie" || 
-        e.characterId === "Chloe" || 
-        ((e.characterId === "Hugo" || e.characterId === "Ivan") && (e.content.includes("Angie") || e.content.includes("Chloe")))
-      ).length;
-      const hugoCount = dayEvents.filter(e => e.characterId === "Hugo" || e.characterId === "Ivan").length;
+      
+      const heidiGroupCount = dayEvents.filter(e => {
+        // Sender or receiver is Heidi/Albee
+        const isSenderHeidi = e.characterId === "Heidi" || e.characterId === "Albee";
+        const isReceiverHeidi = e.receiverId === "Heidi" || e.receiverId === "Albee";
+        if (isSenderHeidi || isReceiverHeidi) return true;
+        
+        // Hugo's narrative/content referring to Heidi
+        if (e.characterId === "Hugo" || e.characterId === "Ivan") {
+          const lowerContent = e.content.toLowerCase();
+          return lowerContent.includes("heidi") || lowerContent.includes("albee") || lowerContent.includes("雞湯") || lowerContent.includes("交往") || lowerContent.includes("女朋友");
+        }
+        return false;
+      }).length;
+
+      const angieGroupCount = dayEvents.filter(e => {
+        // Sender or receiver is Angie/Chloe
+        const isSenderAngie = e.characterId === "Angie" || e.characterId === "Chloe";
+        const isReceiverAngie = e.receiverId === "Angie" || e.receiverId === "Chloe";
+        if (isSenderAngie || isReceiverAngie) return true;
+        
+        // Hugo's narrative/content referring to Angie
+        if (e.characterId === "Hugo" || e.characterId === "Ivan") {
+          const lowerContent = e.content.toLowerCase();
+          return lowerContent.includes("angie") || lowerContent.includes("chloe") || lowerContent.includes("結他") || lowerContent.includes("靈感") || lowerContent.includes("寫生");
+        }
+        return false;
+      }).length;
       
       // Formatting date label to MM-DD
       const dateParts = date.split('-');
@@ -41,9 +58,8 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
 
       return {
         date: label,
-        'Heidi豬🐽': heidiCount,
-        'Angie小公主👸': angieCount,
-        'Hugo🌴': hugoCount,
+        'Hugo ✕ Heidi 豬🐽 (Heidi 組)': heidiGroupCount,
+        'Hugo ✕ Angie 小公主👸 (Angie 組)': angieGroupCount,
       };
     });
   };
@@ -149,9 +165,8 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
                     labelStyle={{ color: "#334155", fontWeight: "bold" }}
                   />
                   <Legend wrapperStyle={{ paddingTop: 10 }} />
-                  <Line type="monotone" dataKey="Heidi豬🐽" stroke="#ec4899" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="Angie小公主👸" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="Hugo🌴" stroke="#128c7e" strokeWidth={1} strokeDasharray="4 4" dot={false} />
+                  <Line type="monotone" dataKey="Hugo ✕ Heidi 豬🐽 (Heidi 組)" stroke="#ec4899" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Hugo ✕ Angie 小公主👸 (Angie 組)" stroke="#10b981" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
