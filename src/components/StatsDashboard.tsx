@@ -14,6 +14,9 @@ interface StatsDashboardProps {
 }
 
 export default function StatsDashboard({ events, characters }: StatsDashboardProps) {
+  const hugo = characters.find(c => c.id === "Hugo") || characters.find(c => c.id === "Ivan") || characters[0] || { id: "Hugo", name: "Hugo", relationshipToHugo: "主角" };
+  const heidi = characters.find(c => c.id === "Heidi") || characters.find(c => c.id === "Albee") || characters[1] || { id: "Heidi", name: "Heidi", relationshipToHugo: "女友" };
+  const angie = characters.find(c => c.id === "Angie") || characters.find(c => c.id === "Chloe") || characters[2] || { id: "Angie", name: "Angie", relationshipToHugo: "同事/夥伴" };
   
   // 1. Process Timeline Events for Interaction Frequency chart (by Date)
   const getFrequencyData = () => {
@@ -130,12 +133,58 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
   const frequencyData = getFrequencyData();
   const hourlyData = getHourlyData();
 
-  // 4. Extract and calculate the frequency of Emojis used across dialogues by character
-  const getEmojiFrequencyByCharacter = (charId: string, alternateId: string) => {
-    const counts: { [emoji: string]: number } = {};
-    // Match common emojis including faces, hearts, animals, and symbols
+  // 4. Extract and calculate the frequency of Emojis used by Hugo directed to Heidi vs Angie
+  const getHugoCompoundEmojiData = () => {
+    const toHeidiCounts: { [emoji: string]: number } = {};
+    const toAngieCounts: { [emoji: string]: number } = {};
+    const allHugoEmojis: { [emoji: string]: number } = {};
     const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{27BF}]/gu;
-    
+
+    events.forEach(e => {
+      if (e.characterId === hugo.id || e.characterId === "Ivan" || e.characterId === "Hugo") {
+        if (!e.content) return;
+        const matches = e.content.match(emojiRegex);
+        if (matches) {
+          matches.forEach(emoji => {
+            allHugoEmojis[emoji] = (allHugoEmojis[emoji] || 0) + 1;
+            const rec = e.receiverId;
+            if (rec === heidi.id || rec === "Heidi" || rec === "Albee") {
+              toHeidiCounts[emoji] = (toHeidiCounts[emoji] || 0) + 1;
+            } else if (rec === angie.id || rec === "Angie" || rec === "Chloe") {
+              toAngieCounts[emoji] = (toAngieCounts[emoji] || 0) + 1;
+            }
+          });
+        }
+      }
+    });
+
+    // Take top 6 emojis
+    const sortedEmojis = Object.entries(allHugoEmojis)
+      .sort((a, b) => b[1] - a[1])
+      .map(([emoji]) => emoji)
+      .slice(0, 6);
+
+    // Default emojis if there are few
+    const defaultHugoList = ["🌴", "👍", "😊", "❤️", "🥺", "☕"];
+    const finalEmojiList = [...sortedEmojis];
+    while (finalEmojiList.length < 6 && defaultHugoList.length > 0) {
+      const next = defaultHugoList.shift();
+      if (next && !finalEmojiList.includes(next)) {
+        finalEmojiList.push(next);
+      }
+    }
+
+    return finalEmojiList.map(emoji => ({
+      emoji,
+      toHeidi: toHeidiCounts[emoji] || 0,
+      toAngie: toAngieCounts[emoji] || 0,
+    }));
+  };
+
+  const getSingleCharacterEmojiData = (charId: string, alternateId: string) => {
+    const counts: { [emoji: string]: number } = {};
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{27BF}]/gu;
+
     events
       .filter(e => e.characterId === charId || e.characterId === alternateId)
       .forEach(e => {
@@ -148,15 +197,26 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
         }
       });
 
-    return Object.entries(counts)
-      .map(([emoji, count]) => ({ emoji, count }))
-      .sort((a, b) => b.count - a.count)
+    const sorted = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
       .slice(0, 6);
+
+    const finalData = sorted.map(([emoji, count]) => ({ emoji, count }));
+    const defaultEmojis = charId === "Heidi" ? ["🐽", "😘", "⚡", "😭", "❤️", "🥺"] : ["👸", "🎸", "💖", "✨", "🎵", "💫"];
+
+    while (finalData.length < 6 && defaultEmojis.length > 0) {
+      const next = defaultEmojis.shift();
+      if (next && !finalData.some(item => item.emoji === next)) {
+        finalData.push({ emoji: next, count: 0 });
+      }
+    }
+
+    return finalData;
   };
 
-  const hugoEmojiData = getEmojiFrequencyByCharacter("Hugo", "Ivan");
-  const heidiEmojiData = getEmojiFrequencyByCharacter("Heidi", "Albee");
-  const angieEmojiData = getEmojiFrequencyByCharacter("Angie", "Chloe");
+  const hugoCompoundEmojiData = getHugoCompoundEmojiData();
+  const heidiEmojiData = getSingleCharacterEmojiData(heidi.id, "Albee");
+  const angieEmojiData = getSingleCharacterEmojiData(angie.id, "Chloe");
 
   return (
     <div className="space-y-6" id="stats-dashboard">
@@ -402,38 +462,34 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           
-          {/* 1. Hugo Card */}
+          {/* 1. Hugo Card - Compound Line Chart */}
           <div className="bg-[#128c7e]/5 border border-[#128c7e]/15 p-4 rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-[#128c7e]/10">
                 <span className="text-2xl">🌴</span>
                 <div>
-                  <h5 className="font-bold text-sm text-[#128c7e]">Hugo (主角)</h5>
-                  <span className="text-[9px] text-slate-400 block font-mono">椰子島・狀態游移與掙扎</span>
+                  <h5 className="font-bold text-sm text-[#128c7e]">{hugo.name}</h5>
+                  <span className="text-[9px] text-slate-400 block font-mono">{hugo.relationshipToHugo}</span>
                 </div>
               </div>
 
-              <div className="h-44 mb-4 select-none">
-                {hugoEmojiData.length > 0 ? (
+              <div className="h-44 mb-4 select-none font-sans text-[11px]">
+                {hugoCompoundEmojiData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={hugoEmojiData}
-                      layout="vertical"
-                      margin={{ top: 0, right: 15, left: -25, bottom: 0 }}
+                    <LineChart
+                      data={hugoCompoundEmojiData}
+                      margin={{ top: 10, right: 15, left: -25, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-                      <XAxis type="number" stroke="#94a3b8" fontSize={9} />
-                      <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={14} width={30} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="emoji" stroke="#94a3b8" fontSize={16} tickLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={10} width={25} />
                       <Tooltip
                         contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: 11 }}
-                        formatter={(value: any) => [`${value} 次`, 'Hugo 使用']}
                       />
-                      <Bar dataKey="count" fill="#128c7e" radius={[0, 4, 4, 0]}>
-                        {hugoEmojiData.map((_, i) => (
-                          <Cell key={`hugo-${i}`} fill={["#128c7e", "#0b645a", "#159e8e", "#20b3a1", "#41c6b5", "#64dacf"][i % 6]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: 10, marginTop: 5 }} />
+                      <Line type="monotone" dataKey="toHeidi" stroke="#ec4899" strokeWidth={2.5} name={`致 ${heidi.name}`} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="toAngie" stroke="#eab308" strokeWidth={2.5} name={`致 ${angie.name}`} activeDot={{ r: 6 }} />
+                    </LineChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-slate-400 italic text-xs font-mono text-center">暫無對話表情</div>
@@ -443,52 +499,48 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
 
             <div className="space-y-1.5 pt-2 border-t border-[#128c7e]/10">
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">最常使用</span>
-              <div className="grid grid-cols-2 gap-1.5">
-                {hugoEmojiData.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 p-1.5 rounded bg-white/70 border border-slate-100 text-[11px] font-sans">
-                    <span className="text-sm shrink-0">{item.emoji}</span>
-                    <span className="font-bold text-[#128c7e] font-mono">{item.count}次</span>
+              <div className="grid grid-cols-2 gap-1.5 font-sans">
+                {hugoCompoundEmojiData.slice(0, 4).map((item, idx) => (
+                  <div key={idx} className="flex flex-col p-1.5 rounded bg-white/70 border border-slate-100 text-[10px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm shrink-0">{item.emoji}</span>
+                      <span className="text-slate-400 text-[9px] font-mono">
+                        致 H:{item.toHeidi} / A:{item.toAngie}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 font-sans italic leading-normal">
-                主用 🌴 象徵放空退縮；👍 / 😊 顯示壓抑和冷淡敷衍。
-              </p>
             </div>
           </div>
 
-          {/* 2. Heidi Card */}
+          {/* 2. Heidi Card - Single Line Chart */}
           <div className="bg-pink-50/50 border border-pink-100 p-4 rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-pink-200/40">
                 <span className="text-2xl">🐽</span>
                 <div>
-                  <h5 className="font-bold text-sm text-pink-600 font-sans">Heidi (女友)</h5>
-                  <span className="text-[9px] text-slate-400 block font-mono">交往4年・日常羈絆與安全感</span>
+                  <h5 className="font-bold text-sm text-pink-600 font-sans">{heidi.name}</h5>
+                  <span className="text-[9px] text-slate-400 block font-mono">{heidi.relationshipToHugo}</span>
                 </div>
               </div>
 
-              <div className="h-44 mb-4 select-none">
+              <div className="h-44 mb-4 select-none font-sans text-[11px]">
                 {heidiEmojiData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
+                    <LineChart
                       data={heidiEmojiData}
-                      layout="vertical"
-                      margin={{ top: 0, right: 15, left: -25, bottom: 0 }}
+                      margin={{ top: 10, right: 15, left: -25, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" horizontal={false} />
-                      <XAxis type="number" stroke="#94a3b8" fontSize={9} />
-                      <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={14} width={30} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" />
+                      <XAxis dataKey="emoji" stroke="#94a3b8" fontSize={16} tickLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={10} width={25} />
                       <Tooltip
                         contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #fbcfe8", borderRadius: "6px", fontSize: 11 }}
-                        formatter={(value: any) => [`${value} 次`, 'Heidi 使用']}
                       />
-                      <Bar dataKey="count" fill="#ec4899" radius={[0, 4, 4, 0]}>
-                        {heidiEmojiData.map((_, i) => (
-                          <Cell key={`heidi-${i}`} fill={["#db2777", "#ec4899", "#f43f5e", "#f472b6", "#fbcfe8", "#fda4af"][i % 6]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: 10, marginTop: 5 }} />
+                      <Line type="monotone" dataKey="count" stroke="#ec4899" strokeWidth={2.5} name={`致 ${hugo.name}`} activeDot={{ r: 6 }} />
+                    </LineChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-slate-400 italic text-xs font-mono text-center">暫無對話表情</div>
@@ -498,52 +550,44 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
 
             <div className="space-y-1.5 pt-2 border-t border-pink-200/40">
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">最常使用</span>
-              <div className="grid grid-cols-2 gap-1.5">
-                {heidiEmojiData.map((item, idx) => (
+              <div className="grid grid-cols-2 gap-1.5 font-sans">
+                {heidiEmojiData.slice(0, 4).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-1.5 p-1.5 rounded bg-white/70 border border-pink-100 text-[11px] font-sans">
                     <span className="text-sm shrink-0">{item.emoji}</span>
                     <span className="font-bold text-pink-600 font-mono">{item.count}次</span>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 font-sans italic leading-normal">
-                熱用 🐽、😘 展現日常撒嬌；出現 ⚡、😭 則代表嚴重不安全感。
-              </p>
             </div>
           </div>
 
-          {/* 3. Angie Card */}
+          {/* 3. Angie Card - Single Line Chart */}
           <div className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-emerald-200/40">
                 <span className="text-2xl">👸</span>
                 <div>
-                  <h5 className="font-bold text-sm text-emerald-600 font-sans">Angie (同事)</h5>
-                  <span className="text-[9px] text-slate-400 block font-mono">新世界・樂理音樂靈魂共振</span>
+                  <h5 className="font-bold text-sm text-emerald-600 font-sans">{angie.name}</h5>
+                  <span className="text-[9px] text-slate-400 block font-mono">{angie.relationshipToHugo}</span>
                 </div>
               </div>
 
-              <div className="h-44 mb-4 select-none">
+              <div className="h-44 mb-4 select-none font-sans text-[11px]">
                 {angieEmojiData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
+                    <LineChart
                       data={angieEmojiData}
-                      layout="vertical"
-                      margin={{ top: 0, right: 15, left: -25, bottom: 0 }}
+                      margin={{ top: 10, right: 15, left: -25, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#d1fae5" horizontal={false} />
-                      <XAxis type="number" stroke="#94a3b8" fontSize={9} />
-                      <YAxis dataKey="emoji" type="category" stroke="#94a3b8" fontSize={14} width={30} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#d1fae5" />
+                      <XAxis dataKey="emoji" stroke="#94a3b8" fontSize={16} tickLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={10} width={25} />
                       <Tooltip
                         contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #a7f3d0", borderRadius: "6px", fontSize: 11 }}
-                        formatter={(value: any) => [`${value} 次`, 'Angie 使用']}
                       />
-                      <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]}>
-                        {angieEmojiData.map((_, i) => (
-                          <Cell key={`angie-${i}`} fill={["#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#c6f6d5"][i % 6]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: 10, marginTop: 5 }} />
+                      <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2.5} name={`致 ${hugo.name}`} activeDot={{ r: 6 }} />
+                    </LineChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-slate-400 italic text-xs font-mono text-center">暫無對話表情</div>
@@ -553,17 +597,14 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
 
             <div className="space-y-1.5 pt-2 border-t border-emerald-200/40">
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">最常使用</span>
-              <div className="grid grid-cols-2 gap-1.5">
-                {angieEmojiData.map((item, idx) => (
+              <div className="grid grid-cols-2 gap-1.5 font-sans">
+                {angieEmojiData.slice(0, 4).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-1.5 p-1.5 rounded bg-white/70 border border-emerald-100 text-[11px] font-sans">
                     <span className="text-sm shrink-0">{item.emoji}</span>
                     <span className="font-bold text-emerald-600 font-mono">{item.count}次</span>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 font-sans italic leading-normal">
-                高頻 🎸、👸 呼應樂理與靈感；💖 的出現預示情感防禦正在融化。
-              </p>
             </div>
           </div>
 
