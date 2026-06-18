@@ -18,6 +18,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
   const [filterType, setFilterType] = useState<string>("all"); // all, Heidi, Angie, narrative, important
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeAnchor, setActiveAnchor] = useState<string>("");
+  const [currentVisibleDate, setCurrentVisibleDate] = useState<string>("");
 
   const timelineContainerRef = useRef<HTMLDivElement>(null);
 
@@ -116,6 +117,54 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
       }
     }, isEventVisible ? 50 : 250);
   };
+
+  // Watch screen scrolling to update active display date badge
+  React.useEffect(() => {
+    if (filteredEvents.length > 0) {
+      const firstEvent = filteredEvents[0];
+      const dateSplit = firstEvent.date.split("-");
+      const formatted = dateSplit.length >= 3 ? `${dateSplit[1]}月${dateSplit[2]}日` : firstEvent.date;
+      setCurrentVisibleDate(formatted);
+    } else {
+      setCurrentVisibleDate("");
+    }
+
+    const handleScroll = () => {
+      const cards = document.querySelectorAll('[id^="event-card-"]');
+      let currentTopDate = "";
+      
+      const threshold = window.innerWidth < 768 ? 140 : 190;
+      let minDistance = Infinity;
+
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const distance = Math.abs(rect.top - threshold);
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          const id = card.id.replace("event-card-", "");
+          const ev = filteredEvents.find(e => e.id === id);
+          if (ev) {
+            currentTopDate = ev.date;
+          }
+        }
+      });
+
+      if (currentTopDate) {
+        const dateSplit = currentTopDate.split("-");
+        const formatted = dateSplit.length >= 3 ? `${dateSplit[1]}月${dateSplit[2]}日` : currentTopDate;
+        setCurrentVisibleDate(formatted);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    const timer = setTimeout(handleScroll, 100);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
+  }, [filteredEvents]);
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 relative font-sans" id="timeline-explorer">
@@ -245,6 +294,16 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
           </div>
         </div>
  
+        {/* Floating WhatsApp-Style Date Indicator Box */}
+        {currentVisibleDate && (
+          <div className="sticky top-[105px] md:top-[74px] z-30 flex justify-center py-2 pointer-events-none transition-all duration-300">
+            <div className="bg-[#e1f3fc]/95 backdrop-blur-md border border-[#bae6fd] text-[#0369a1] text-[11px] md:text-xs font-bold font-sans tracking-wide px-4 py-1.5 rounded-full shadow-md flex items-center gap-1.5 pointer-events-auto hover:bg-[#cfe9f7] transition-all">
+              <Calendar className="w-3.5 h-3.5 text-[#0284c7]" />
+              <span>{currentVisibleDate}</span>
+            </div>
+          </div>
+        )}
+
         {/* Narrative Streams */}
         <div 
           ref={timelineContainerRef}
