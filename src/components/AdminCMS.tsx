@@ -18,6 +18,14 @@ interface AdminCMSProps {
   isAdmin: boolean;
 }
 
+const PRESET_IMAGES = [
+  { label: "西九海濱寫生", url: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=400" },
+  { label: "浪漫塞納河", url: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=400" },
+  { label: "深夜暖意咖啡店", url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=400" },
+  { label: "微雨露台花園", url: "https://images.unsplash.com/photo-1534349762230-e0cadf78f5da?auto=format&fit=crop&q=80&w=400" },
+  { label: "高壓加班寫字樓", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400" }
+];
+
 export default function AdminCMS({ currentUser, characters, events, isAdmin }: AdminCMSProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ text: string; error?: boolean } | null>(null);
