@@ -97,11 +97,13 @@ export default function StatsDashboard({ events, characters }: StatsDashboardPro
     const positive = charEvents.filter(e => e.sentiment === SentimentType.POSITIVE).length;
     const neutral = charEvents.filter(e => e.sentiment === SentimentType.NEUTRAL).length;
     const negative = charEvents.filter(e => e.sentiment === SentimentType.NEGATIVE).length;
+    const suggestive = charEvents.filter(e => e.sentiment === SentimentType.SUGGESTIVE).length;
     
     return [
       { name: "正面 ❤️", value: positive, color: "#10b981" },
       { name: "常態 💬", value: neutral, color: "#64748b" },
-      { name: "張力 ⚡", value: negative, color: "#ef4444" }
+      { name: "張力 ⚡", value: negative, color: "#ef4444" },
+      { name: "性暗示 🫦", value: suggestive, color: "#d946ef" }
     ].filter(item => item.value > 0);
   };
 
