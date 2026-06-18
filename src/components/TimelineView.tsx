@@ -139,6 +139,28 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
               // Format date readable
               const dateSplit = milestone.date.split("-");
               const formattedDate = dateSplit.length >= 3 ? `${dateSplit[1]}月${dateSplit[2]}日` : milestone.date;
+
+              // Safe resolve of indicator dot color and character label
+              let resolvedColor = "rgb(148, 163, 184)"; // default slate gray color
+              let resolvedName = milestone.characterId;
+
+              if (character) {
+                resolvedColor = character.color;
+                resolvedName = character.name.replace(/🌴|豬🐽|小公主👸/g, '').trim() || character.name;
+              } else {
+                // Legacy system or auto-cleaning fallback logic 
+                const cidNorm = milestone.characterId.toLowerCase();
+                if (cidNorm === "heidi" || cidNorm === "albee" || cidNorm.includes("豬") || cidNorm.includes("girl")) {
+                  resolvedColor = "#ec4899"; // Heidi's trademark pink
+                  resolvedName = "Heidi";
+                } else if (cidNorm === "angie" || cidNorm === "chloe" || cidNorm.includes("公主")) {
+                  resolvedColor = "#eab308"; // Angie's characteristic amber yellow
+                  resolvedName = "Angie";
+                } else if (cidNorm === "hugo" || cidNorm === "ivan" || cidNorm.includes("樹仁")) {
+                  resolvedColor = "#128c7e"; // Hugo's brand green
+                  resolvedName = "Hugo";
+                }
+              }
  
               return (
                 <button
@@ -151,7 +173,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
                   }`}
                 >
                   <Calendar className={`w-3.5 h-3.5 mt-0.5 ${isActive ? "text-[#128c7e]" : "text-slate-400 group-hover:text-slate-600"}`} />
-                  <div className="overflow-hidden">
+                  <div className="overflow-hidden w-full">
                     <div className="flex items-center justify-between gap-1">
                       <span className={`font-mono font-bold tracking-tight ${isActive ? "text-[#075e54]" : "text-slate-700"}`}>{formattedDate}</span>
                       <span className="text-[9px] font-mono text-slate-400">{milestone.time}</span>
@@ -159,16 +181,15 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
                     <p className={`text-[11px] truncate mt-1 ${isActive ? "text-slate-800" : "text-slate-500 group-hover:text-slate-700"} font-light`}>
                       {milestone.content.replace(/「|」|【|】/g, '')}
                     </p>
-                    {character && (
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: character.color }} />
-                        <span className="text-[9px] text-slate-400 tracking-wider font-mono uppercase">{character.name.replace(/🌴|豬🐽|小公主👸/g, '')}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0" style={{ backgroundColor: resolvedColor }} />
+                      <span className="text-[10px] text-slate-400 tracking-wider font-mono uppercase font-medium truncate">{resolvedName}</span>
+                    </div>
                   </div>
                 </button>
               );
             })}
+          </div>
             
             {anchorMilestones.length === 0 && (
               <div className="text-slate-400 text-xs italic p-4 text-center font-mono">
@@ -177,8 +198,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
             )}
           </div>
         </div>
-      </div>
- 
+
       {/* RIGHT AREA: Active Scroll Timeline Stream */}
       <div className="xl:col-span-9 order-2 xl:order-2 space-y-4">
         
