@@ -123,7 +123,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
     if (filteredEvents.length > 0) {
       const firstEvent = filteredEvents[0];
       const dateSplit = firstEvent.date.split("-");
-      const formatted = dateSplit.length >= 3 ? `${dateSplit[1]}月${dateSplit[2]}日` : firstEvent.date;
+      const formatted = dateSplit.length >= 3 ? `${dateSplit[0]}年${dateSplit[1]}月${dateSplit[2]}日` : firstEvent.date;
       setCurrentVisibleDate(formatted);
     } else {
       setCurrentVisibleDate("");
@@ -152,7 +152,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
 
       if (currentTopDate) {
         const dateSplit = currentTopDate.split("-");
-        const formatted = dateSplit.length >= 3 ? `${dateSplit[1]}月${dateSplit[2]}日` : currentTopDate;
+        const formatted = dateSplit.length >= 3 ? `${dateSplit[0]}年${dateSplit[1]}月${dateSplit[2]}日` : currentTopDate;
         setCurrentVisibleDate(formatted);
       }
     };
