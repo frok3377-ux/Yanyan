@@ -200,7 +200,7 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
                 { id: "Heidi", label: "與 Heidi" },
                 { id: "Angie", label: "與 Angie" },
                 { id: "narrative", label: "獨白" },
-                { id: "important", label: "重要 🌟" }
+                { id: "important", label: "重要 🐣" }
               ].map(pill => (
                 <button
                   key={pill.id}
@@ -378,10 +378,10 @@ export default function TimelineView({ events, characters, onSelectEvent }: Time
                             left: isHugo ? '-85px' : 'auto',
                           }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{
-                              backgroundColor: event.sentiment === SentimentType.POSITIVE ? '#10b981' : event.sentiment === SentimentType.NEGATIVE ? '#ef4444' : '#94a3b8'
+                              backgroundColor: event.sentiment === SentimentType.POSITIVE ? '#10b981' : event.sentiment === SentimentType.NEGATIVE ? '#ef4444' : event.sentiment === SentimentType.SUGGESTIVE ? '#d946ef' : '#94a3b8'
                             }} />
                             <span className="text-slate-500 font-sans">
-                              {event.sentiment === SentimentType.POSITIVE ? "熱絡" : event.sentiment === SentimentType.NEGATIVE ? "壓抑" : "平穩"}
+                              {event.sentiment === SentimentType.POSITIVE ? "熱絡" : event.sentiment === SentimentType.NEGATIVE ? "壓抑" : event.sentiment === SentimentType.SUGGESTIVE ? "暗示" : "平穩"}
                             </span>
                           </div>
                         )}
