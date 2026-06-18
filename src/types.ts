@@ -13,7 +13,8 @@ export enum EventType {
 export enum SentimentType {
   POSITIVE = "positive",
   NEUTRAL = "neutral",
-  NEGATIVE = "negative"
+  NEGATIVE = "negative",
+  SUGGESTIVE = "suggestive"
 }
 
 export interface Character {
