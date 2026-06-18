@@ -18,14 +18,6 @@ interface AdminCMSProps {
   isAdmin: boolean;
 }
 
-const PRESET_IMAGES = [
-  { label: "西九海濱寫生", url: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=400" },
-  { label: "浪漫塞納河", url: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=400" },
-  { label: "深夜暖意咖啡店", url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=400" },
-  { label: "微雨露台花園", url: "https://images.unsplash.com/photo-1534349762230-e0cadf78f5da?auto=format&fit=crop&q=80&w=400" },
-  { label: "高壓加班寫字樓", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400" }
-];
-
 export default function AdminCMS({ currentUser, characters, events, isAdmin }: AdminCMSProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ text: string; error?: boolean } | null>(null);
@@ -281,44 +273,6 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
   return (
     <div className="space-y-6" id="cms-authenticated-view">
       
-      {/* Top Admin banner details */}
-      <div className="bg-white p-4 rounded-xl border border-[#e9edef] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#128c7e]/10 border border-[#128c7e]/20 rounded-lg">
-            <ShieldCheck className="w-5 h-5 text-[#128c7e]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-800 text-sm">
-                {currentUser?.email || "免登入公開協作模式 (Public Admin)"}
-              </span>
-              <span className="text-[10px] bg-emerald-100 border border-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">無需驗證權限 👑</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              系統已對所有訪客全面開放。你所做的變更將即時同步備份至雲端 Firestore。
-            </p>
-          </div>
-        </div>
-
-        {currentUser ? (
-          <button
-            onClick={logoutUser}
-            className="text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 font-medium px-3.5 py-1.8 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            切換帳號/登出
-          </button>
-        ) : (
-          <button
-            onClick={loginWithGoogle}
-            className="text-xs text-[#128c7e] hover:text-[#0b645a] bg-[#128c7e]/15 hover:bg-[#128c7e]/25 font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            綁定 Google 帳號 (選填)
-          </button>
-        )}
-      </div>
-
       {/* Floating Status Notification Toast */}
       {statusMessage && (
         <div className={`p-4 rounded-xl border flex items-start gap-2.5 max-w-xl mx-auto shadow-md z-50 transition-all ${
