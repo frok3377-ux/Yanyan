@@ -301,9 +301,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Top relation visual tension map */}
-                  <RelationshipMap characters={characters} events={events} />
-
                   {/* Fully functional interactive anchor timeline */}
                   <TimelineView 
                     events={events} 
@@ -327,6 +324,9 @@ export default function App() {
                       基於對話時間點及語氣的自動分析，將情感危機與主權移轉過程數據化。你會輕易看見：Heidi 豬🐽 在早上發送大量問候，而 Angie 小公主👸 則在深夜發起深度交流。
                     </p>
                   </div>
+
+                  {/* Refined and highly polished relationship energy map */}
+                  <RelationshipMap characters={characters} events={events} />
 
                   <StatsDashboard events={events} characters={characters} />
                 </div>
