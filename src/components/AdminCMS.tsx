@@ -26,21 +26,6 @@ const PRESET_IMAGES = [
   { label: "高壓加班寫字樓", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400" }
 ];
 
-const EMOJI_CATEGORIES = [
-  {
-    name: "常用表情 💬",
-    emojis: ["😊", "😘", "😍", "🥹", "🥺", "😔", "😢", "😭", "😡", "🤫", "🫣", "😳", "🫠", "💔", "❤️", "🫦", "🍻", "☕", "🍷"]
-  },
-  {
-    name: "專屬角色 🌴",
-    emojis: ["🌴", "🐽", "👸", "🐣", "💬", "📱", "💼", "🎨", "🎸", "🎭", "🍿", "🎒", "🚗", "💤", "🌧️"]
-  },
-  {
-    name: "關係張力 ⚡",
-    emojis: ["⚠️", "⚡", "🔥", "💣", "💭", "✨", "🌟", "🧭", "📍", "🔍", "🔑", "🕯️", "📝", "🧸"]
-  }
-];
-
 export default function AdminCMS({ currentUser, characters, events, isAdmin }: AdminCMSProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ text: string; error?: boolean } | null>(null);
@@ -64,34 +49,6 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
   const [sentiment, setSentiment] = useState<SentimentType>(SentimentType.NEUTRAL);
   const [isImportant, setIsImportant] = useState<boolean>(false);
   const [order, setOrder] = useState<number>(10);
-
-  // Emoji Keyboard Selection State & Ref
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const [activeEmojiTab, setActiveEmojiTab] = useState<number>(0);
-  const [showEmojiKeyboard, setShowEmojiKeyboard] = useState<boolean>(true);
-
-  const handleInsertEmoji = (emoji: string) => {
-    const el = textareaRef.current;
-    if (!el) {
-      setContent(prev => prev + emoji);
-      return;
-    }
-    
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const text = el.value;
-    const before = text.substring(0, start);
-    const after = text.substring(end, text.length);
-    
-    setContent(before + emoji + after);
-    
-    // Focus back and set cursor position after the emoji
-    setTimeout(() => {
-      el.focus();
-      const newPos = start + emoji.length;
-      el.setSelectionRange(newPos, newPos);
-    }, 10);
-  };
 
   // Dynamic receiver matching rules: there is no chat record in between Angie and Heidi!
   React.useEffect(() => {
@@ -673,18 +630,8 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
 
           {/* Content Field */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-slate-500 font-medium">文本內容</label>
-              <button
-                type="button"
-                onClick={() => setShowEmojiKeyboard(!showEmojiKeyboard)}
-                className="text-[11px] text-[#128c7e] hover:text-[#0b645a] font-medium flex items-center gap-1 cursor-pointer transition-colors"
-              >
-                {showEmojiKeyboard ? "🙈 隱藏表情鍵盤" : "✨ 顯示表情鍵盤"}
-              </button>
-            </div>
+            <label className="text-slate-500 font-medium">文本內容</label>
             <textarea 
-              ref={textareaRef}
               rows={3}
               placeholder="輸入 WhatsApp 說過的原話，或男主角內心無助的掙扎獨白..."
               value={content}
@@ -692,43 +639,6 @@ export default function AdminCMS({ currentUser, characters, events, isAdmin }: A
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:outline-none focus:border-[#128c7e] text-slate-800 leading-relaxed font-sans"
               required
             />
-
-            {/* Emoji Keyboard Auxiliary Panel */}
-            {showEmojiKeyboard && (
-              <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5 space-y-2 transition-all">
-                {/* Category Headers */}
-                <div className="flex gap-1.5 border-b border-slate-200/50 pb-1.5">
-                  {EMOJI_CATEGORIES.map((cat, i) => (
-                    <button
-                      type="button"
-                      key={i}
-                      onClick={() => setActiveEmojiTab(i)}
-                      className={`text-[10px] px-2 py-0.5 rounded transition-all font-medium cursor-pointer ${
-                        activeEmojiTab === i 
-                          ? 'bg-[#128c7e] text-white shadow-sm' 
-                          : 'bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-150'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
-                {/* Grid of Emojis */}
-                <div className="flex flex-wrap gap-1.5">
-                  {EMOJI_CATEGORIES[activeEmojiTab].emojis.map((emoji, i) => (
-                    <button
-                      type="button"
-                      key={i}
-                      onClick={() => handleInsertEmoji(emoji)}
-                      className="w-7.5 h-7.5 flex items-center justify-center text-base bg-white hover:bg-emerald-50 rounded border border-slate-150 shadow-sm hover:border-[#128c7e] active:scale-95 transition-all cursor-pointer"
-                      title="點擊編寫到文本游標位置"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Image Link Input */}
