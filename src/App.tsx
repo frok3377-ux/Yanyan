@@ -162,10 +162,11 @@ export default function App() {
           
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-8 h-8 rounded bg-[#128c7e] flex items-center justify-center shadow-inner">
-                <span className="text-[11px] font-bold text-white">WA</span>
-              </div>
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 absolute -top-1 -right-1" />
+              <img 
+                src="https://i.postimg.cc/zBGdjvcs/462425662-8364636420238422-7290258814432512226-n.jpg"
+                alt="WA Logo Avatar"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-[#128c7e] shadow-sm"
+              />
             </div>
             <div>
               <h1 className="font-sans font-bold text-sm sm:text-base tracking-tight text-white flex items-center gap-2">
@@ -203,15 +204,8 @@ export default function App() {
             })}
           </div>
 
-          {/* Status sync light */}
+          {/* Right Header Actions */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 bg-[#128c7e]/30 border border-[#128c7e]/40 px-2.5 py-1 rounded-full text-[9px] font-mono tracking-wider uppercase">
-              <div className={`w-1.5 h-1.5 rounded-full ${syncSource === "database" ? "bg-emerald-400 animate-pulse" : "bg-teal-200"}`} />
-              <span className="text-teal-50 font-bold">
-                {syncSource === "database" ? "雲端同步中 (Live)" : "Demo 資料 (Local)"}
-              </span>
-            </div>
-
             {/* User profile identifier */}
             {currentUser && (
               <img 
@@ -284,23 +278,6 @@ export default function App() {
                 
                 /* TAB 1: STORY HUB */
                 <div className="space-y-6" id="timeline-tab-content">
-                  
-                  {/* Hero intro header banner */}
-                  <div className="bg-white border border-[#e9edef] p-5 sm:p-6 rounded-xl shadow-sm">
-                    <div className="max-w-3xl">
-                      <span className="text-[10px] bg-[#128c7e]/10 border border-[#128c7e]/25 text-[#128c7e] font-sans font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-3">
-                        多元視點 • 沉浸式情節流
-                      </span>
-                      <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-800 tracking-tight leading-tight">
-                        在時間的刻度上，重構三個人的溫度 🎞️
-                      </h2>
-                      <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed font-light">
-                        「這是一部關於抉擇的互動對話故事。男主角 <strong>Hugo🌴</strong> 面對長跑四年的女友 <strong>Heidi豬🐽</strong> 所帶來的安穩生活起伏，以及帶有強烈靈魂和藝術共鳴的新同事 <strong>Angie小公主👸</strong> 所帶來的火花。
-                        透過下方多角度時空定位導航、文字、與 WhatsApp 圖影，我們將為你解構他們關係中的關鍵瞬間。」
-                      </p>
-                    </div>
-                  </div>
-
                   {/* Fully functional interactive anchor timeline */}
                   <TimelineView 
                     events={events} 
@@ -321,7 +298,7 @@ export default function App() {
                       關係動態分析與對話比率統計
                     </h2>
                     <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-light">
-                      基於對話時間點及語氣的自動分析，將情感危機與主權移轉過程數據化。你會輕易看見：Heidi 豬🐽 在早上發送大量問候，而 Angie 小公主👸 則在深夜發起深度交流。
+                      基於對話時間點及語氣的自動分析，將情感危機與主權移轉過程數據化。
                     </p>
                   </div>
 
